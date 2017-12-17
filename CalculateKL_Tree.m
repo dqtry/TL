@@ -4,7 +4,8 @@ se_mask=fspecial('gaussian',[1,3]);
 epsilon=0;
 for k_s=1:max(gt_a(:))
     ind= gt_a==k_s;% tree
-    Xsk=normcols(Xa(ind,:));
+    Xsk=Xa(ind,:);
+%     Xsk=normcols(Xa(ind,:));
     IDX=kmeans(Xsk,num_clusters,'MaxIter',10000);% kmeans
     model_s{k_s}=fitctree(Xsk,IDX);
     pred_s=predict(model_s{k_s},Xsk);
@@ -16,7 +17,8 @@ end
 %% 构建目标域树及簇统计
 for k_t=1:max(gt_b(:))
     ind= gt_b==k_t;% tree
-    Xtk=normcols(Xb(ind,:));
+    Xtk=Xb(ind,:);
+%     Xtk=normcols(Xb(ind,:));
     IDX=kmeans(Xtk,num_clusters,'MaxIter',10000);% kmeans
     model_t{k_t}=fitctree(Xtk,IDX);
     pred_t=predict(model_t{k_t},Xtk);
@@ -28,7 +30,8 @@ end
 for k_s=1:max(gt_a(:))
     for k_t=1:max(gt_b(:))
         ind=gt_b==k_t;
-        Xtk=normcols(Xb(ind,:));
+        Xtk=Xb(ind,:);
+%         Xtk=normcols(Xb(ind,:));
         pred_t=predict(model_s{k_s},Xtk);
         Nt = histcounts(pred_t,edges{k_s});
         Nt = conv(Nt,se_mask);
@@ -41,7 +44,8 @@ end
 for k_t=1:max(gt_b(:))
     for k_s=1:max(gt_a(:))
         ind=gt_a==k_s;
-        Xsk=normcols(Xa(ind,:));
+        Xsk=Xa(ind,:);
+%         Xsk=normcols(Xa(ind,:));
         pred_t=predict(model_t{k_t},Xsk);
         Ns = histcounts(pred_t,edget{k_t});
         Ns = conv(Ns,se_mask);

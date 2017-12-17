@@ -12,12 +12,12 @@ for k1=1:max(gt_a(:))
         for k3=1:size(Xa,2)
             tempa=find(gt_a==k1);
             [Na,~]=histcounts(Xa(tempa,k3),edges);
-            Na=conv(Na+eps,se_mask,'same');% 先进行平滑然后连接
-            Nas=[Nas,Na];
+            Na=conv(Na,se_mask,'same');% 先进行平滑然后连接
+            Nas=[Nas,Na+eps];
             tempb=find(gt_b==k2);
             [Nb,~]=histcounts(Xb(tempb,k3),edges);
-            Nb=conv(Nb+eps,se_mask,'same');% 先进行平滑然后连接
-            Nbs=[Nbs,Nb];
+            Nb=conv(Nb,se_mask,'same');% 先进行平滑然后连接
+            Nbs=[Nbs,Nb+eps];
         end
         Pa=Nas./sum(Nas);
         Pb=Nbs./sum(Nbs);

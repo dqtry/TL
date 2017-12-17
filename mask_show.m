@@ -28,3 +28,8 @@ subplot(1,2,1);imshow(reshape(aa,[size(ims_gt),3]),[])
 subplot(1,2,2);imshow(reshape(bb,[size(imt_gt),3]),[])
 end
 stat(id+1,:)=sum(stat);
+
+for k=1:size(a,2)
+    im(:,k)=histeq(a(:,k),100);
+end
+    
