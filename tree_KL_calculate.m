@@ -14,7 +14,7 @@ for kkk=1:10% 检测聚类的随机性
 %% 构建源域树及类统计
 for k_s=1:max(ims_gt(:))
     ind= ims_gt==k_s;% tree
-    Xsk=normcols(ims(ind,:));
+    Xsk=ims(ind,:);
     IDX=kmeans(Xsk,50,'MaxIter',10000);% kmeans
     model_s{k_s}=fitctree(Xsk,IDX);
     pred_s=predict(model_s{k_s},Xsk);
@@ -26,7 +26,7 @@ end
 %% 构建目标域树及簇统计
 for k_t=1:max(imt_gt(:))
     ind= imt_gt==k_t;% tree
-    Xtk=normcols(imt(ind,:));
+    Xtk=imt(ind,:);
     IDX=kmeans(Xtk,50,'MaxIter',10000);% kmeans
     model_t{k_t}=fitctree(Xtk,IDX);
     pred_t=predict(model_t{k_t},Xtk);
@@ -38,7 +38,7 @@ end
 for k_s=1:max(ims_gt(:))
     for k_t=1:max(imt_gt(:))
         ind=imt_gt==k_t;
-        Xtk=normcols(imt(ind,:));
+        Xtk=imt(ind,:);
         pred_t=predict(model_s{k_s},Xtk);
         Nt = histcounts(pred_t,edges{k_s});
         Nt = conv(Nt,se_mask);
@@ -51,7 +51,7 @@ end
 for k_t=1:max(imt_gt(:))
     for k_s=1:max(ims_gt(:))
         ind=ims_gt==k_s;
-        Xsk=normcols(ims(ind,:));
+        Xsk=ims(ind,:);
         pred_t=predict(model_t{k_t},Xsk);
         Ns = histcounts(pred_t,edget{k_t});
         Ns = conv(Ns,se_mask);
