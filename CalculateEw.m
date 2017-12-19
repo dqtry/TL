@@ -35,7 +35,7 @@ function [Ew,Ew2,eval]=CalculateEw(Xa,gt_a,Xb,gt_b,num_bins)
 %% 1.一维直方图，分波段，每波段用100个bin进行统计，平滑之后进行一维连接
 % num_bins=[11 21 31 41 51 61 71 81 91 101 111 121 131 141 151];
 % % for kt=1:length(num_bins)
-edges=linspace(0,1,num_bins+1);
+edges=linspace(min(Xa(:)),max(Xa(:)),num_bins+1);%理论上应该归一化0~1
 se_mask=fspecial('gaussian',[1,3]);
 for k1=1:max(gt_a(:))
     for k2=1:max(gt_b(:))

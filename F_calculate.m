@@ -1,10 +1,13 @@
 %% 计算F评价，得到最佳的聚类簇数M
-load E:\TransfLearning\area1_target\im1.mat im im_gt
-imt=reshape(double(im),[],size(im,3));imt_gt=im_gt+1;
+
+load E:\TransfLearning\area1_target\im1.mat im %im_gt
+imt=reshape(double(im),[],size(im,3));%imt_gt=im_gt+1;
+
 F1=[];F2=[];F=[];
-for M=5 %3:8
+rng(0);
+for M=3:8
 id_cluster = kmeans(imt,M,'MaxIter',10000);
-imt=mean(imt,2);
+% imt=mean(imt,2);%灰度图计算簇内和簇间方差
 intra_v=0;inter_v=0;
 N=size(imt,1);mu=[];
 for k1=1:M
@@ -29,12 +32,13 @@ F2(end+1)=sum(inter_v)+1/(sum(intra_v)+1);%%%%%%%%+1
 %% 1.一维直方图，分波段，每波段用100个bin进行统计，平滑之后进行一维连接
 load E:\TransfLearning\area7_source\im1.mat im im_gt
 ims=reshape(im,[],size(im,3));ims_gt=im_gt+1;
-imt=ims;%% 用相同的数据进行测试
-imt_gt=ims_gt;
+load E:\TransfLearning\area1_target\im1.mat im %im_gt
+imt=reshape(double(im),[],size(im,3));%imt_gt=im_gt+1;
+% imt=ims;%% 用相同的数据进行测试
+% imt_gt=ims_gt;
+
 num_bins=50;
-
-
-[KL_stmat,KL_tsmat]=CalculateKL(ims,ims_gt,imt,imt_gt,num_bins);
+[KL_stmat,KL_tsmat]=CalculateKL(ims,ims_gt,imt,id_cluster,num_bins);%源域类、目标域簇
 F1(end+1)=1/(abs(sum(KL_stmat(:))-sum(KL_tsmat(:)))/numel(KL_stmat)+1);%%%%%%%%%%%+1
 F(end+1)=F1(end)+F2(end);
 end
