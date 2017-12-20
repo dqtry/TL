@@ -1,8 +1,8 @@
 %% 计算F评价，得到最佳的聚类簇数M
 
-load E:\TransfLearning\area1_target\im1.mat im %im_gt
+load E:\TransfLearning\area1_target\im1.mat im im_gt
 imt=reshape(double(im),[],size(im,3));%imt_gt=im_gt+1;
-
+[cols,rows]=meshgrid(1:size(im_gt,2),1:size(im_gt,1));
 F1=[];F2=[];F=[];
 rng(0);
 for M=3:8
