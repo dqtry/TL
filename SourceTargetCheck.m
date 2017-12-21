@@ -50,7 +50,7 @@
 % end
 %% 计算Ew
 % num_bins=50;
-% [Ew,Ew2,eval]=CalculateEw(ims,ims_gt,imt,imt_gt,num_bins);%% 计算Ew距离
+% [Ew,Ew2,Ew3,eval]=CalculateEw(ims,ims_gt,imt,imt_gt,num_bins);%% 计算Ew距离
 %% 域内分成两部分进行验证JS距离有效
 % rng(0);% 设置种子点，可复现
 % feat1=[];feat2=[];gt1=[];gt2=[];
@@ -63,7 +63,7 @@
 %     feat2=[feat2;temp_feat(round(length(temp)/2)+1:end,:)];
 %     gt2=[gt2;k1*ones(length(temp)-round(length(temp)/2),1)];
 % end
-% [Ew,Ew2,eval]=CalculateEw(feat1,gt1,feat2,gt2,100);%% 计算Ew距离
+% [Ew,Ew2,Ew3,eval]=CalculateEw(feat1,gt1,feat2,gt2,100);%% 计算Ew距离
 %% ---------PU和PC显示效果检测-----------
 % % [~,C,~,~,midx]=kmedoids(ims',3);% midx对应RGB可能需要调整
 % midx=[52 80 23];
@@ -93,39 +93,19 @@ Xb=reshape(Pc_same,[],size(Pc_same,3));gt_b=Cgt;
 Xa=normcols(Xa);
 Xb=normcols(Xb);
 % % 灰度拉伸
-nbins=100;
-thresh=0.001;
-aup=zeros(1,size(Xa,2));bup=zeros(1,size(Xb,2));
-for k=1:size(Xa,2)
-    [N,edges] = histcounts(Xa(:,k),nbins);
-    cumN=cumsum(N,'reverse')./sum(N);
-    temp=find(cumN<thresh, 1, 'first');
-    aup(k)=edges(temp);%temp-1
-    Xa(:,k)=imadjust(Xa(:,k),[min(Xa(:,k)),aup(k)],[0,1]);
-    
-    [N,edges] = histcounts(Xb(:,k),nbins);
-    cumN=cumsum(N,'reverse')./sum(N);
-    temp=find(cumN<thresh, 1, 'first');
-    bup(k)=edges(temp);%temp-1
-    Xb(:,k)=imadjust(Xb(:,k),[min(Xb(:,k)),bup(k)],[0,1]);
-end
+[Xa,Xb]=pavia_adjust(Xa,Xb,100,0.001);
 % kmedoids取波段
-[~,~,~,~,midx]=kmedoids(Xa',10);% midx对应RGB可能需要调整
-Xa=normcols(Xa(:,midx));
-Xb=normcols(Xb(:,midx));
+% [~,C,~,~,midx]=kmedoids(Xa',10);% midx对应RGB可能需要调整
+% Xa=normcols(Xa(:,midx));
+% Xb=normcols(Xb(:,midx));
 % imshow(reshape(Xa(:,midx),[size(gt_a),3]))
 
 if size(Xa,2)~=size(Xb,2)
     error('特征维度必须一致');
 end
-% [COEFF, Xa, LATENT] = pca(Xa,'Centered',false,'NumComponents',10);%,'NumComponents',5
-% Xa=normcols(Xa);
-% [~, Xb] = pca(Xb,'Centered',false,'NumComponents',10);%,'NumComponents',5
-% Xb=normcols(Xb);
-% [~,C,~,~,midx]=kmedoids(Xa',3);% midx对应RGB可能需要调整
 num_bins=100;
 % [KL_stmat1,KL_tsmat1]=CalculateKL(Xa,gt_a,Xb,gt_b,num_bins);
-[Ew,Ew2,eval]=CalculateEw(Xa,gt_a,Xb,gt_b,num_bins);%% 计算Ew距离
+[Ew,Ew2,Ew3,eval]=CalculateEw(Xa,gt_a,Xb,gt_b,num_bins);%% 计算Ew距离
 %% % 自编码特征
 load E:\TransfLearning\PUC\Pu.mat Ugt
 gt_a=Ugt;
@@ -138,7 +118,7 @@ gt_b=Cgt;feata=[];featb=[];
 load E:\TransfLearning\PUC\feats23.mat feat_a feat_b
 feata=[feata,feat_a];featb=[featb,feat_b];
 num_bins=100;
-[Ew,Ew2,eval]=CalculateEw(feata,gt_a,featb,gt_b,num_bins);%% 计算Ew距离
+[Ew,Ew2,Ew3,eval]=CalculateEw(feata,gt_a,featb,gt_b,num_bins);%% 计算Ew距离
 pairs=iter_match(Ew);%迭代匹配
 matched_pairs=cell2mat(pairs);
 %% 每类各波段均值绘制折线，查看类别可分性
@@ -154,11 +134,11 @@ figure(3),hold on
 linecolor=[0.9961,0,0;
     0,0.5430,0;
     0,0,0.9961;
-    0,0.9961,0.9961;
+    0,0,0.9961;
     0.9961,0,0.9961;
-    0.9961,0.9961,0;
+    0,0,0;
     0.542977035172045,0.109376668955520,0.382818341344320];
-for kk=1:max(gt_a(:))
+for kk=[1 2 6 7]%1:max(gt_a(:))
     tempa = find(gt_a==kk);
     amean(kk,:)=mean(Xa(tempa,:),1);
     tempb = find(gt_b==kk);

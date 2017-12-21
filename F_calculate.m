@@ -1,47 +1,58 @@
 %% 计算F评价，得到最佳的聚类簇数M
-
-load E:\TransfLearning\area1_target\im1.mat im im_gt
-imt=reshape(double(im),[],size(im,3));%imt_gt=im_gt+1;
-[cols,rows]=meshgrid(1:size(im_gt,2),1:size(im_gt,1));
-F1=[];F2=[];F=[];
+load E:\TransfLearning\PUC\Pu.mat Pu_same Ugt
+Xa=reshape(Pu_same,[],size(Pu_same,3));gt_a=Ugt;
+Xa=normcols(Xa);
+load E:\TransfLearning\PUC\Pc.mat Pc_same Cgt
+Xb=reshape(Pc_same,[],size(Pc_same,3));gt_b=Cgt;
+Xb=normcols(Xb);
+[ims,imt]=pavia_adjust(Xa,Xb,100,0.001);
+inda=find(gt_a);indb=find(gt_b);%==1|gt_a==2|gt_a==6|gt_a==7 ==1|gt_b==2|gt_b==6|gt_b==7
+ims=ims(inda,:);imt=imt(indb,:);
+ims_gt=gt_a(inda);imt_gt=gt_b(indb);
+M_vector=7%5:9;
+% load E:\TransfLearning\area7_source\im1.mat im im_gt
+% ims=reshape(im,[],size(im,3));ims_gt=im_gt+1;
+% load E:\TransfLearning\area1_target\im1.mat im %im_gt
+% imt=reshape(double(im),[],size(im,3));%imt_gt=im_gt+1;
+% % imt=ims;%% 用相同的数据进行测试
+% % imt_gt=ims_gt;
+% [cols,rows]=meshgrid(1:size(im_gt,2),1:size(im_gt,1));%考虑添加坐标信息进行聚类
+F1=zeros(size(M_vector));F2=zeros(size(M_vector));F=zeros(size(M_vector));
 rng(0);
-for M=3:8
-id_cluster = kmeans(imt,M,'MaxIter',10000);
-% imt=mean(imt,2);%灰度图计算簇内和簇间方差
-intra_v=0;inter_v=0;
-N=size(imt,1);mu=[];
-for k1=1:M
-    temp=find(id_cluster==k1);
-    Cluster=imt(temp,:);
-    mu(k1,:)=mean(Cluster,1);
-    n_k1=length(temp);
-    omega(k1)=n_k1/N;
-    intra_v=intra_v+sum((Cluster-mu(k1,:)).^2,1)./N;
+for k=1:length(M_vector)
+    M=M_vector(k);
+    id_cluster = kmeans(imt,M,'MaxIter',10000,'OnlinePhase','on','Display','final');%聚类'EmptyAction','drop','OnlinePhase','on',
+    %% KL divergence
+    % 一维直方图，分波段，每波段用100个bin进行统计，平滑之后进行一维连接
+    num_bins=50;
+    [KL_stmat,KL_tsmat]=CalculateKL(ims,ims_gt,imt,id_cluster,num_bins);%源域类、目标域簇
+    F1(k)=1/(abs(sum(KL_stmat(:))-sum(KL_tsmat(:)))/numel(KL_stmat)+1);
+    %% 计算簇内和簇间方差
+    imt_gray=mean(imt,2);%灰度图计算簇内和簇间方差
+    intra_v=0;inter_v=0;
+    N=size(imt_gray,1);mu=[];
+    for k1=1:M
+        temp=find(id_cluster==k1);
+        Cluster=imt_gray(temp,:);
+        mu(k1,:)=mean(Cluster,1);
+        n_k1=length(temp);
+        omega(k1)=n_k1/N;
+        intra_v=intra_v+sum((Cluster-mu(k1,:)).^2,1)./N;
+    end
+    mu_T=mean(imt_gray,1);% mu_T=mean(X,1);mu_T=sum(omega'.*mu);
+    sigma_T=mean((imt_gray-mu_T).^2,1);
+    % for k2=1:M-1
+    %     for k3=k2+1:M
+    %         inter_v=inter_v+omega(k2)*omega(k3)*(mu(k2,:)-mu(k3,:)).^2;
+    %     end
+    % end
+    for k4=1:M
+        inter_v=inter_v+omega(k4)*(mu(k4,:)-mu_T).^2;
+    end
+    F2(k)=sum(inter_v)+1/(sum(intra_v)+1);%%%%%%%%+1
+    F(k)=F1(k)+F2(k);
 end
-mu_T=mean(imt,1);% mu_T=mean(X,1);mu_T=sum(omega'.*mu);
-sigma_T=mean((imt-mu_T).^2,1);
-% for k2=1:M-1
-%     for k3=k2+1:M
-%         inter_v=inter_v+omega(k2)*omega(k3)*(mu(k2,:)-mu(k3,:)).^2;
-%     end
-% end
-for k4=1:M
-    inter_v=inter_v+omega(k4)*(mu(k4,:)-mu_T).^2;
-end
-F2(end+1)=sum(inter_v)+1/(sum(intra_v)+1);%%%%%%%%+1
-%% 1.一维直方图，分波段，每波段用100个bin进行统计，平滑之后进行一维连接
-load E:\TransfLearning\area7_source\im1.mat im im_gt
-ims=reshape(im,[],size(im,3));ims_gt=im_gt+1;
-load E:\TransfLearning\area1_target\im1.mat im %im_gt
-imt=reshape(double(im),[],size(im,3));%imt_gt=im_gt+1;
-% imt=ims;%% 用相同的数据进行测试
-% imt_gt=ims_gt;
-
-num_bins=50;
-[KL_stmat,KL_tsmat]=CalculateKL(ims,ims_gt,imt,id_cluster,num_bins);%源域类、目标域簇
-F1(end+1)=1/(abs(sum(KL_stmat(:))-sum(KL_tsmat(:)))/numel(KL_stmat)+1);%%%%%%%%%%%+1
-F(end+1)=F1(end)+F2(end);
-end
+plot(M_vector,F);
 %% 利用非监督树得到KL散度，从而计算F1
 % load('E:\TransfLearning\area7_source\im1.mat', 'im')
 % load('E:\TransfLearning\area7_source\im1.mat', 'im_gt')
@@ -101,4 +112,3 @@ end
 % KL_tsmat=cell2mat(KL_ts);
 % F1(end+1)=1/(abs(sum(KL_stmat(:))-sum(KL_tsmat(:)))/numel(KL_stmat)+1);%%%%%%%%%%%+1
 
-    

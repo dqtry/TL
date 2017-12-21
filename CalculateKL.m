@@ -25,5 +25,4 @@ for k1=1:max(gt_a(:))
         KL_tsmat(k2,k1)=sum(Pb.*log(Pb./Pa));
     end
 end
-
 end

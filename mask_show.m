@@ -1,12 +1,10 @@
 %% 单类查看，检查类别是否对应
 load E:\TransfLearning\PUC\Pu.mat Pu_same Ugt
 ims=reshape(Pu_same,[],size(Pu_same,3));ims_gt=Ugt;
-% [~, ims] = pca(ims,'Centered',false,'NumComponents',3);
 ims=normcols(ims);
 
 load E:\TransfLearning\PUC\Pc.mat Pc_same Cgt
 imt=reshape(Pc_same,[],size(Pc_same,3));imt_gt=Cgt;
-% [~, imt] = pca(imt,'Centered',false,'NumComponents',3);
 imt=normcols(imt);
 
 midx=[52 80 23];% kmedoids得到（顺序调整）的三个显示效果较好的三个波段

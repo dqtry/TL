@@ -1,4 +1,4 @@
-function [Ew,Ew2,eval]=CalculateEw(Xa,gt_a,Xb,gt_b,num_bins)
+function [Ew,Ew2,Ew3,eval]=CalculateEw(Xa,gt_a,Xb,gt_b,num_bins)
 %% 直方图统计分布，用于计算Ew(JS散度的平方根)
 % 将源域每类分成两部分进行验证哪种直方图适合于计算Ew
 % A Novel Graph-Matching-Based Approach for Domain Adaptation in Classification of Remote Sensing Image Pair
@@ -59,7 +59,12 @@ for k1=1:max(gt_a(:))
         KL_bu(k1,k2)=sum(Pb.*log(Pb./Pu));
         Ew(k1,k2)=sqrt(0.5*KL_au(k1,k2)+0.5*KL_bu(k1,k2));
 %         Ew(k1,k2)=sqrt(max(KL_au(k1,k2),KL_bu(k1,k2)));
-        Ew2(k1,k2)=sqrt(min(KL_au(k1,k2),KL_bu(k1,k2)));
+%         Ew2(k1,k2)=sqrt(min(KL_au(k1,k2),KL_bu(k1,k2)));
+        Pu2=0.5*Pa+0.5*Pb;
+        KL_au2(k1,k2)=sum(Pa.*log(Pa./Pu2));
+        KL_bu2(k1,k2)=sum(Pb.*log(Pb./Pu2));
+        Ew2(k1,k2)=sqrt(0.5*KL_au2(k1,k2)+0.5*KL_bu2(k1,k2));
+        Ew3(k1,k2)=sqrt(0.5*(sum(Pa.*log(Pa))+sum(Pb.*log(Pb)))-sum(0.5*(Pa+Pb).*log(0.5*(Pa+Pb))));
     end
 end
 Ewt=Ew+100*eye(size(Ew));%为了取得除了非对角线元素的最小值
