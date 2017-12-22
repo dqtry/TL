@@ -6,10 +6,18 @@ load E:\TransfLearning\PUC\Pc.mat Pc_same Cgt
 Xb=reshape(Pc_same,[],size(Pc_same,3));gt_b=Cgt;
 Xb=normcols(Xb);
 [ims,imt]=pavia_adjust(Xa,Xb,100,0.001);
+% load E:\TransfLearning\PUC\feats2.mat feat_a feat_b
+% ims=feat_a;imt=feat_b;
+% clear feat_a feat_b
+% load E:\TransfLearning\PUC\Pu.mat Ugt
+% gt_a=Ugt;
+% load E:\TransfLearning\PUC\Pc.mat Cgt
+% gt_b=Cgt;
+%-----------------------------------------------------------------
 inda=find(gt_a);indb=find(gt_b);%==1|gt_a==2|gt_a==6|gt_a==7 ==1|gt_b==2|gt_b==6|gt_b==7
 ims=ims(inda,:);imt=imt(indb,:);
 ims_gt=gt_a(inda);imt_gt=gt_b(indb);
-M_vector=7%5:9;
+M_vector=7;%3:7
 % load E:\TransfLearning\area7_source\im1.mat im im_gt
 % ims=reshape(im,[],size(im,3));ims_gt=im_gt+1;
 % load E:\TransfLearning\area1_target\im1.mat im %im_gt
@@ -18,15 +26,29 @@ M_vector=7%5:9;
 % % imt_gt=ims_gt;
 % [cols,rows]=meshgrid(1:size(im_gt,2),1:size(im_gt,1));%考虑添加坐标信息进行聚类
 F1=zeros(size(M_vector));F2=zeros(size(M_vector));F=zeros(size(M_vector));
-rng(0);
+% rng(1);
 for k=1:length(M_vector)
     M=M_vector(k);
-    id_cluster = kmeans(imt,M,'MaxIter',10000,'OnlinePhase','on','Display','final');%聚类'EmptyAction','drop','OnlinePhase','on',
+    %---------------------------------------------------------------------
+    id_cluster = kmeans(imt,M,'MaxIter',10000,'OnlinePhase','on','Replicates',4,'Options',statset('UseParallel',1),'Display','final');%聚类
+    %---------------------------------------------------------------------
     %% KL divergence
     % 一维直方图，分波段，每波段用100个bin进行统计，平滑之后进行一维连接
-    num_bins=50;
+    num_bins=100;
     [KL_stmat,KL_tsmat]=CalculateKL(ims,ims_gt,imt,id_cluster,num_bins);%源域类、目标域簇
+    [Ew,Ew2,Ew3,eval]=CalculateEw(Xa,gt_a,Xb,gt_b,num_bins);
     F1(k)=1/(abs(sum(KL_stmat(:))-sum(KL_tsmat(:)))/numel(KL_stmat)+1);
+    % ------聚类效果测试（用了真实标记）
+%     pairs=iter_match(Ew2);
+%     matched_pair=cell2mat(pairs);
+%     [~,I] = sort(matched_pair(1,:));%% 可以用sortrows
+%     real_matched=matched_pair(2,I);
+%     match_id=zeros(size(id_cluster));
+%     %mode(id_cluster(imt_gt==kkk))
+%     for kkk=1:max(id_cluster(:))
+%         match_id(id_cluster==kkk)=real_matched(kkk);
+%     end
+%     mean(match_id==imt_gt)
     %% 计算簇内和簇间方差
     imt_gray=mean(imt,2);%灰度图计算簇内和簇间方差
     intra_v=0;inter_v=0;
@@ -52,7 +74,7 @@ for k=1:length(M_vector)
     F2(k)=sum(inter_v)+1/(sum(intra_v)+1);%%%%%%%%+1
     F(k)=F1(k)+F2(k);
 end
-plot(M_vector,F);
+% plot(M_vector,F,'*-');
 %% 利用非监督树得到KL散度，从而计算F1
 % load('E:\TransfLearning\area7_source\im1.mat', 'im')
 % load('E:\TransfLearning\area7_source\im1.mat', 'im_gt')

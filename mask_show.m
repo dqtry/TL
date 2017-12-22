@@ -26,5 +26,10 @@ for id=1:7
     subplot(1,2,2);imshow(reshape(bb,[size(imt_gt),3]),[])
 end
 stat(id+1,:)=sum(stat);
-
+%% 聚类效果测试（用了真实标记）
+match_id=zeros(size(id_cluster));
+for kkk=1:max(id_cluster(:))
+    match_id(id_cluster==mode(id_cluster(imt_gt==kkk)))=kkk;
+end
+mean(match_id==imt_gt)
     
