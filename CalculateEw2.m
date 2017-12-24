@@ -21,9 +21,9 @@ for k1=1:max(gt_a(:))
         Pa=Nas./sum(Nas);Pb=Nbs./sum(Nbs);Pu=Nus./sum(Nus);%概率
         KL_au(k1,k2)=sum(Pa.*log(Pa./Pu));
         KL_bu(k1,k2)=sum(Pb.*log(Pb./Pu));
-        Ew(k1,k2)=sqrt(0.5*KL_au(k1,k2)+0.5*KL_bu(k1,k2));
+        Ew(k1,k2)=sqrt(0.5*KL_au(k1,k2)+0.5*KL_bu(k1,k2));%定义
 %         Ew(k1,k2)=sqrt(max(KL_au(k1,k2),KL_bu(k1,k2)));
-        Ew2(k1,k2)=sqrt(min(KL_au(k1,k2),KL_bu(k1,k2)));
+        Ew2(k1,k2)=sqrt(min(KL_au(k1,k2),KL_bu(k1,k2)));%参考文献
     end
 end
 Ewt=Ew+100*eye(size(Ew));%为了取得除了非对角线元素的最小值

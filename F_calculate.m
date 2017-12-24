@@ -1,4 +1,6 @@
 %% 计算F评价，得到最佳的聚类簇数M
+% clear
+% rng(0);
 load E:\TransfLearning\PUC\Pu.mat Pu_same Ugt
 Xa=reshape(Pu_same,[],size(Pu_same,3));gt_a=Ugt;
 Xa=normcols(Xa);
@@ -6,6 +8,9 @@ load E:\TransfLearning\PUC\Pc.mat Pc_same Cgt
 Xb=reshape(Pc_same,[],size(Pc_same,3));gt_b=Cgt;
 Xb=normcols(Xb);
 [ims,imt]=pavia_adjust(Xa,Xb,100,0.001);
+% [~,C,~,~,midx]=kmedoids(ims',10);
+% ims=ims(:,midx);
+% imt=imt(:,midx);
 % load E:\TransfLearning\PUC\feats2.mat feat_a feat_b
 % ims=feat_a;imt=feat_b;
 % clear feat_a feat_b
@@ -17,7 +22,7 @@ Xb=normcols(Xb);
 inda=find(gt_a);indb=find(gt_b);%==1|gt_a==2|gt_a==6|gt_a==7 ==1|gt_b==2|gt_b==6|gt_b==7
 ims=ims(inda,:);imt=imt(indb,:);
 ims_gt=gt_a(inda);imt_gt=gt_b(indb);
-M_vector=7;%3:7
+M_vector=7*ones(5,1);%3:7 5:9
 % load E:\TransfLearning\area7_source\im1.mat im im_gt
 % ims=reshape(im,[],size(im,3));ims_gt=im_gt+1;
 % load E:\TransfLearning\area1_target\im1.mat im %im_gt
@@ -26,7 +31,7 @@ M_vector=7;%3:7
 % % imt_gt=ims_gt;
 % [cols,rows]=meshgrid(1:size(im_gt,2),1:size(im_gt,1));%考虑添加坐标信息进行聚类
 F1=zeros(size(M_vector));F2=zeros(size(M_vector));F=zeros(size(M_vector));
-% rng(1);
+num_bins=100;
 for k=1:length(M_vector)
     M=M_vector(k);
     %---------------------------------------------------------------------
@@ -34,21 +39,24 @@ for k=1:length(M_vector)
     %---------------------------------------------------------------------
     %% KL divergence
     % 一维直方图，分波段，每波段用100个bin进行统计，平滑之后进行一维连接
-    num_bins=100;
     [KL_stmat,KL_tsmat]=CalculateKL(ims,ims_gt,imt,id_cluster,num_bins);%源域类、目标域簇
-    [Ew,Ew2,Ew3,eval]=CalculateEw(Xa,gt_a,Xb,gt_b,num_bins);
     F1(k)=1/(abs(sum(KL_stmat(:))-sum(KL_tsmat(:)))/numel(KL_stmat)+1);
-    % ------聚类效果测试（用了真实标记）
+    % ------利用Ew进行匹配，测试聚类效果
+    [Ew,Ew2,Ew3,eval]=CalculateEw(ims,ims_gt,imt,id_cluster,num_bins);
 %     pairs=iter_match(Ew2);
 %     matched_pair=cell2mat(pairs);
 %     [~,I] = sort(matched_pair(1,:));%% 可以用sortrows
 %     real_matched=matched_pair(2,I);
 %     match_id=zeros(size(id_cluster));
+%     match_id2=zeros(size(id_cluster));
 %     %mode(id_cluster(imt_gt==kkk))
 %     for kkk=1:max(id_cluster(:))
-%         match_id(id_cluster==kkk)=real_matched(kkk);
+%         match_id(id_cluster==real_matched(kkk))=kkk;
+%         %real_matched是目标域对应的标记，利用Ew将源域和目标域匹配上进行验证
+%         match_id2(id_cluster==mode(id_cluster(imt_gt==kkk)))=kkk;
 %     end
-%     mean(match_id==imt_gt)
+%     valid(k)=mean(match_id==imt_gt);
+%     valid2(k)=mean(match_id2==imt_gt);
     %% 计算簇内和簇间方差
     imt_gray=mean(imt,2);%灰度图计算簇内和簇间方差
     intra_v=0;inter_v=0;
@@ -71,7 +79,7 @@ for k=1:length(M_vector)
     for k4=1:M
         inter_v=inter_v+omega(k4)*(mu(k4,:)-mu_T).^2;
     end
-    F2(k)=sum(inter_v)+1/(sum(intra_v)+1);%%%%%%%%+1
+    F2(k)=sum(inter_v)+1/(sum(intra_v)+1);%+1?????????????
     F(k)=F1(k)+F2(k);
 end
 % plot(M_vector,F,'*-');

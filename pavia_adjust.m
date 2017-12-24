@@ -15,11 +15,15 @@ for k=1:size(Xa,2)
     cumN=cumsum(N,'reverse')./sum(N);
     temp=find(cumN<thresh, 1, 'first');
     aup(k)=edges(temp);%temp-1
-    Xa(:,k)=imadjust(Xa(:,k),[min(Xa(:,k)),aup(k)],[0,1]);
+%     Xa(:,k)=imadjust(Xa(:,k),[min(Xa(:,k)),aup(k)],[0,1]);
     
     [N,edges] = histcounts(Xb(:,k),nbins);
     cumN=cumsum(N,'reverse')./sum(N);
     temp=find(cumN<thresh, 1, 'first');
     bup(k)=edges(temp);%temp-1
-    Xb(:,k)=imadjust(Xb(:,k),[min(Xb(:,k)),bup(k)],[0,1]);
+%     Xb(:,k)=imadjust(Xb(:,k),[min(Xb(:,k)),bup(k)],[0,1]);
 end
+lim_upa=max(aup);
+lim_upb=max(bup);
+Xa=imadjust(Xa,[min(Xa(:)),lim_upa],[0,1]);
+Xb=imadjust(Xb,[min(Xb(:)),lim_upb],[0,1]);

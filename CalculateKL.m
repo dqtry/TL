@@ -1,10 +1,10 @@
 function [KL_stmat,KL_tsmat]=CalculateKL(Xa,gt_a,Xb,gt_b,num_bins)
 % 利用一维直方图估计分布进行KL散度计算
 % Xa Xb 行表示样本，列表示特征 0～1之间的浮点型
-% gt_a gt_b 表示对于的类簇号
+% gt_a gt_b 表示对应的类簇号
 % num_bins 直方图统计时的间隔数
 
-edges=linspace(0,1,num_bins+1);
+edges=linspace(0,1,num_bins+1);%Xa和Xb为[0,1]
 se_mask=fspecial('gaussian',[1,3]);
 for k1=1:max(gt_a(:))
     for k2=1:max(gt_b(:))
